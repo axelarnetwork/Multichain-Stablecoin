@@ -1,0 +1,66 @@
+{
+  "name": "hh project",
+  "version": "1.2.4",
+  "repository": {
+    "type": "git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "npx hardhat clean && npx hardhat compile && npm run copy:interfaces",
+    "codegen:ts": "npm run clean:ts && npx tsx node_modules/@axelarjs/evm/scripts/codegen --src artifacts/contracts --out typescript/contracts --exclude test",
+    "clean:ts": "rm -rf typescript",
+    "build:ts": "npm run codegen:ts",
+    "test": "npx hardhat test",
+    "copy:interfaces": "rm -rf interfaces && mkdir interfaces && cp artifacts/contracts/interfaces/*/*.json interfaces/ && rm interfaces/*.dbg.json",
+    "clean:artifacts": "rm -rf artifacts/build-info artifacts/*/test artifacts/contracts/*/*/*.dbg.json",
+    "lint": "solhint 'contracts/**/*.sol' && eslint 'scripts/**/*.js' && eslint 'test/**/*.js'",
+    "prettier": "prettier --write 'contracts/**/*.sol' 'scripts/**/*.js' 'test/**/*.js' '*.js' 'package.json' '.solhint.json' '.prettierrc' '.github/**/*.yaml'",
+    "flatten": "sh scripts/flatten-contracts.sh",
+    "coverage": "cross-env COVERAGE=true hardhat coverage"
+  },
+  "keywords": [
+    "axelar",
+    "ethereum"
+  ],
+  "author": "axelar-network",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@axelar-network/axelar-cgp-solidity": "6.2.1",
+    "@axelar-network/axelar-gmp-sdk-solidity": "5.6.4",
+    "@axelar-network/interchain-token-service": "^1.2.4",
+    "@openzeppelin/contracts-upgradeable": "^5.0.2"
+  },
+  "devDependencies": {
+    "@axelar-network/axelar-chains-config": "^1.2.0",
+    "@axelarjs/evm": "^0.2.1",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.2",
+    "@tsconfig/strictest": "^2.0.2",
+    "chai": "^4.3.7",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.1",
+    "eslint": "^8.43.0",
+    "eslint-config-richardpringle": "^2.0.0",
+    "hardhat": "~2.22.2",
+    "hardhat-contract-sizer": "^2.10.0",
+    "mocha": "^10.2.0",
+    "prettier": "^2.8.8",
+    "prettier-plugin-solidity": "^1.1.3",
+    "solhint": "^3.4.1",
+    "solidity-docgen": "^0.6.0-beta.36"
+  },
+  "description": "Interchain token service for EVM chains to faciliate interchain token transfers and contract calls",
+  "files": [
+    "artifacts",
+    "contracts",
+    "interfaces",
+    "docs",
+    "scripts",
+    "typescript",
+    "DESIGN.md",
+    "README.md",
+    "hardhat.config.js"
+  ]
+}

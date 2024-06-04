@@ -1,0 +1,37 @@
+[
+    {
+      "name": "Celo",
+      "chainId": 44787,
+      "rpc": "https://alfajores-forno.celo-testnet.org",
+      "gateway": "0xe432150cce91c13a887f7D836923d5597adD8E31",
+      "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+      "its": "0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C",
+      "wmatic": "0x21ba4f6aEdA155DD77Cc33Fb93646910543F0380",
+      "aUSDC": "0x254d06f33bDc5b8ee05b2ea472107E300226659A",
+      "tokenName": "Celo",
+      "tokenSymbol": "CELO"
+    },
+    {
+      "name": "Moonbase",
+      "chainId": 1287,
+      "rpc": "https://moonbase-alpha.public.blastapi.io",
+      "aUSDC": "0x57F1c63497AEe0bE305B8852b354CEc793da43bB",
+      "gateway": "0x5769D84DD62a6fD969856c75c7D321b84d455929",
+      "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+      "its": "0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C",
+      "tokenName": "DEV",
+      "tokenSymbol": "DEV"
+    },
+    {
+      "name": "Ethereum",
+      "chainId": 11155111,
+      "rpc": "https://ethereum-sepolia-rpc.publicnode.com",
+      "aUSDC": "0x254d06f33bDc5b8ee05b2ea472107E300226659A",
+      "gateway": "0xe432150cce91c13a887f7D836923d5597adD8E31",
+      "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
+      "its": "0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C",
+      "tokenName": "ETHER",
+      "tokenSymbol": "ETH"
+    }
+  ]
+  
