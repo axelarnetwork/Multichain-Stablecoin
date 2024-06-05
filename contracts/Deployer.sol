@@ -22,8 +22,6 @@ contract Deployer is Initializable, Create3 {
     error DeploymentFailed();
     error NotApprovedByGateway();
 
-    string public testMe;
-
     /*************\
       STORAGE
   /*************/
@@ -35,18 +33,12 @@ contract Deployer is Initializable, Create3 {
      INITIALIZATION
   /*****************/
 
-    // function init(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) external initializer {
-    // constructor(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) {
-    function init() external {
-        // s_its = _its;
-        // s_accessControl = _accessControl;
-        // s_gateway = _gateway;
-        testMe = 'helllooo';
+    function init(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) external initializer {
+        // constructor(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) {
+        s_its = _its;
+        s_accessControl = _accessControl;
+        s_gateway = _gateway;
     }
-
-    // function testMeFunc() public {
-    //     testMe = 'heyyy';
-    // }
 
     /***************************\
        EXTERNAL FUNCTIONALITY

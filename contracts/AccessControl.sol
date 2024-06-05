@@ -14,12 +14,11 @@ contract AccessControl is AccessControlUpgradeable {
     // blacklisted (receiver) addresses
     mapping(address => bool) private _blacklistedAddresses;
 
-    // function initialize(address _defaultAdmin) public initializer {
-    constructor() public {
-        // __AccessControl_init();
-        // _grantRole(DEFAULT_ADMIN_ROLE, _defaultAdmin);
-        // _grantRole(MINTER_ROLE, _defaultAdmin);
-        // _grantRole(BLACKLIST_ADMIN_ROLE, _defaultAdmin);
+    function initialize(address _defaultAdmin) public initializer {
+        __AccessControl_init();
+        _grantRole(DEFAULT_ADMIN_ROLE, _defaultAdmin);
+        _grantRole(MINTER_ROLE, _defaultAdmin);
+        _grantRole(BLACKLIST_ADMIN_ROLE, _defaultAdmin);
     }
 
     function addAdminRole(address _address) external onlyRole(DEFAULT_ADMIN_ROLE) {
