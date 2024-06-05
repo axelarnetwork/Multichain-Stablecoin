@@ -33,7 +33,7 @@ contract Deployer is Initializable, Create3 {
      INITIALIZATION
   /*****************/
 
-    function init(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) external initializer {
+    function initialize(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) external initializer {
         // constructor(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) {
         s_its = _its;
         s_accessControl = _accessControl;

@@ -27,20 +27,20 @@ task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) 
 task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').setAction(async (taskArgs, hre) => {
     const wallet = getWallet(chains[1].rpc, hre);
 
-    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1000, []);
-    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 10001, []);
+    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1010, []);
+    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1011, []);
 
     // const initData = ethers.utils.defaultAbiCoder.encode(
     //     ['address', 'address', 'address'],
     //     [chains[1].its, '0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE', chains[1].gateway],
     // );
 
-    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1002, [
+    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1012, [
         implAccessControl.address,
         wallet.address,
         '0x',
     ]);
-    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1003, [
+    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1013, [
         implDeployer.address,
         wallet.address,
         '0x',
@@ -55,18 +55,19 @@ task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').
     const DeployerFactory = await ethers.getContractFactory('Deployer');
     const proxyDeployerInstance = await DeployerFactory.attach(proxyDeployer.address);
 
-    await proxyAccessControlInstance.init(wallet.address);
-    await proxyDeployerInstance.init(chains[1].its, proxyAccess.address, chains[1].gateway);
+    await proxyAccessControlInstance.initialize(wallet.address);
+    await proxyDeployerInstance.initialize(chains[1].its, proxyAccess.address, chains[1].gateway);
 });
+
 /*
 task('deployHomeCelo', 'deploy factory on home chain, (celo for testing)')
     .addParam('deployer', 'Deployer on dest chain')
     .setAction(async (taskArgs, hre) => {
         const connectedWallet = getWallet(chains[0].rpc, hre);
-        const AccessControl = await hre.ethers.getContractFactory('AccessControl');
-        const TokenFactory = await hre.ethers.getContractFactory('TokenFactory');
-        const accessControlProxy = await hre.upgrades.deployProxy(AccessControl, [connectedWallet.address], { initializer: 'initialize' });
-        const tokenFactory = await hre.upgrades.deployProxy(
+        const AccessControl = await ethers.getContractFactory('AccessControl');
+        const TokenFactory = await ethers.getContractFactory('TokenFactory');
+        const accessControlProxy = await upgrades.deployProxy(AccessControl, [connectedWallet.address], { initializer: 'initialize' });
+        const tokenFactory = await upgrades.deployProxy(
             TokenFactory,
             [
                 chains[0].its,
