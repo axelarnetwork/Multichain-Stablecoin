@@ -1,10 +1,7 @@
 require('dotenv').config();
 const { task } = require('hardhat/config');
 require('@nomicfoundation/hardhat-toolbox');
-// require('@openzeppelin/hardhat-upgrades');
 require('hardhat-contract-sizer');
-// require('@nomicfoundation/hardhat-chai-matchers');
-// require('hardhat-tracer');
 
 const fs = require('fs-extra');
 const chains = require('./chains.json');
@@ -12,6 +9,7 @@ const { getWallet } = require('./utils');
 const Deployer = require('./artifacts/contracts/Deployer.sol/Deployer.json');
 const Proxy = require('@openzeppelin/contracts/build/contracts/TransparentUpgradeableProxy.json');
 const AccessControl = require('./artifacts/contracts/AccessControl.sol/AccessControl.json');
+const Factory = require('./artifacts/contracts/TokenFactory.sol/TokenFactory.json');
 const { create3DeployContract } = require('@axelar-network/axelar-gmp-sdk-solidity/scripts/create3Deployer');
 
 const create3DeployerAddress = '0x6513Aedb4D1593BA12e50644401D976aebDc90d8';
@@ -27,20 +25,20 @@ task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) 
 task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').setAction(async (taskArgs, hre) => {
     const wallet = getWallet(chains[1].rpc, hre);
 
-    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1010, []);
-    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1011, []);
+    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1020, []);
+    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1021, []);
 
     // const initData = ethers.utils.defaultAbiCoder.encode(
     //     ['address', 'address', 'address'],
     //     [chains[1].its, '0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE', chains[1].gateway],
     // );
 
-    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1012, [
+    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1022, [
         implAccessControl.address,
         wallet.address,
         '0x',
     ]);
-    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1013, [
+    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1023, [
         implDeployer.address,
         wallet.address,
         '0x',
@@ -50,42 +48,56 @@ task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').
     console.log(`proxyDeployer ${proxyDeployer.address}`);
 
     const AccessControlFactory = await ethers.getContractFactory('AccessControl');
-    const proxyAccessControlInstance = await AccessControlFactory.attach(proxyAccess.address);
-
     const DeployerFactory = await ethers.getContractFactory('Deployer');
+
+    const proxyAccessControlInstance = await AccessControlFactory.attach(proxyAccess.address);
     const proxyDeployerInstance = await DeployerFactory.attach(proxyDeployer.address);
 
     await proxyAccessControlInstance.initialize(wallet.address);
     await proxyDeployerInstance.initialize(chains[1].its, proxyAccess.address, chains[1].gateway);
 });
 
-/*
 task('deployHomeCelo', 'deploy factory on home chain, (celo for testing)')
     .addParam('deployer', 'Deployer on dest chain')
     .setAction(async (taskArgs, hre) => {
-        const connectedWallet = getWallet(chains[0].rpc, hre);
-        const AccessControl = await ethers.getContractFactory('AccessControl');
-        const TokenFactory = await ethers.getContractFactory('TokenFactory');
-        const accessControlProxy = await upgrades.deployProxy(AccessControl, [connectedWallet.address], { initializer: 'initialize' });
-        const tokenFactory = await upgrades.deployProxy(
-            TokenFactory,
-            [
-                chains[0].its,
-                chains[0].gasService,
-                chains[0].gateway,
-                accessControlProxy.target,
-                taskArgs.deployer,
-                'celo', // homeChain
-            ],
-            {
-                initializer: 'initialize',
-                unsafeAllow: ['constructor', 'state-variable-immutable'],
-            },
+        const wallet = getWallet(chains[0].rpc, hre);
+
+        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1044, []);
+        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1045, []);
+
+        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1046, [
+            implAccessControl.address,
+            wallet.address,
+            '0x',
+        ]);
+
+        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1047, [
+            implFactory.address,
+            wallet.address,
+            '0x',
+        ]);
+
+        console.log(`celo contract address: ${proxyFactory.address}`);
+
+        const AccessControlFactory = await ethers.getContractFactory('AccessControl');
+        const TokenFactoryFactory = await ethers.getContractFactory('TokenFactory');
+
+        const proxyAccessControlInstance = await AccessControlFactory.attach(proxyAccess.address);
+        const proxyFactoryInstance = await TokenFactoryFactory.attach(proxyFactory.address);
+
+        await proxyAccessControlInstance.initialize(wallet.address);
+
+        await proxyFactoryInstance.initialize(
+            chains[0].its,
+            chains[0].gasService,
+            chains[0].gateway,
+            proxyAccess.address,
+            wallet.address,
+            hre.ethers.utils.formatBytes32String('celo'),
         );
 
-        console.log(`celo contract address: ${tokenFactory.target}`);
     });
-*/
+
 const config = {
     solidity: {
         version: '0.8.20',
