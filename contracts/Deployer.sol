@@ -69,13 +69,17 @@ contract Deployer is Initializable, Create3 {
         address newTokenProxy = _create3(creationCodeProxy, 0x000000000000000000000000000000000000000000000000000000000000007B); //123
         if (newTokenProxy == address(0)) revert DeploymentFailed();
 
-        //circumvent stack too deep
-        string memory chain = _sourceChain;
+        s_its.deployTokenManager(
+            0x0000000000000000000000000000000000000000000000000000000000003039, //12345
+            '',
+            ITokenManagerType.TokenManagerType.MINT_BURN,
+            abi.encode(address(this).toBytes(), newTokenProxy),
+            0
+        );
 
-        s_gateway.callContract(chain, _sourceAddress, abi.encode(newTokenProxy));
+        s_gateway.callContract(_sourceChain, _sourceAddress, abi.encode(newTokenProxy));
     }
 
-    // 0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C
     function _getEncodedCreationCodeSemiNative(
         address _proxyAdmin,
         address _implAddr,
