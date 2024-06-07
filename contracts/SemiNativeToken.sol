@@ -12,7 +12,7 @@ import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchai
 
 import './NativeTokenV1.sol';
 
-contract MultichainToken is
+contract SemiNativeToken is
   Initializable,
   ERC20Upgradeable,
   ERC20BurnableUpgradeable
