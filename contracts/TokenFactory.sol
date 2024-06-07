@@ -13,7 +13,7 @@ import '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
 import './NativeTokenV1.sol';
-import './MultichainToken.sol';
+import './SemiNativeToken.sol';
 import './AccessControl.sol';
 import './Deployer.sol';
 
@@ -94,8 +94,8 @@ contract TokenFactory is Create3, Initializable {
         bytes memory gmpPayload = abi.encode(
             computedTokenId,
             address(this),
-            type(MultichainToken).creationCode,
-            MultichainToken.initialize.selector
+            type(SemiNativeToken).creationCode,
+            SemiNativeToken.initialize.selector
         );
 
         s_gasService.payNativeGasForContractCall{ value: msg.value }(

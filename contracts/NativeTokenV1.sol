@@ -8,7 +8,7 @@ import '@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PermitUp
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchainTokenService.sol';
 import './AccessControl.sol';
-import './MultichainToken.sol';
+import './SemiNativeToken.sol';
 
 //TODO Inherit from InterchainTokenStandard
 contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, ERC20PausableUpgradeable, ERC20PermitUpgradeable {
