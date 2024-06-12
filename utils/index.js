@@ -1,5 +1,3 @@
-const { HardhatRuntimeEnvironment } = require('hardhat/types');
-
 const getWallet = (rpc, hre) => {
     const key = process.env.PRIVATE_KEY;
     if (!key) {

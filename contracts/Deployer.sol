@@ -86,7 +86,7 @@ contract Deployer is Initializable, Create3 {
         bytes32 _itsTokenId,
         bytes4 semiNativeSelector
     ) internal view returns (bytes memory proxyCreationCode) {
-        bytes memory initData = abi.encodeWithSelector(semiNativeSelector, s_accessControl, s_its, _itsTokenId);
+        bytes memory initData = abi.encodeWithSelector(semiNativeSelector, s_its, _itsTokenId);
 
         proxyCreationCode = abi.encodePacked(type(TransparentUpgradeableProxy).creationCode, abi.encode(_implAddr, _proxyAdmin, initData));
     }
