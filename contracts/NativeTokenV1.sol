@@ -25,11 +25,11 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
     /*************/
     AccessControl public s_accessControl;
     IInterchainTokenService public s_its;
-    bytes32 public s_tokenId;
 
+    bytes32 public s_tokenId;
     uint256 public s_burnRate;
     uint256 public s_txFeeRate;
-    uint256 private s_rewardPool;
+    uint256 public s_rewardPool;
 
     /*************\
         EVENTS
@@ -97,6 +97,7 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         s_txFeeRate = newRewardRate;
     }
 
+    // > await contract.mint("0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE", "7000000000000000000", {gasLimit: "10000000"})
     function mint(address _to, uint256 _amount) public whenNotPaused isBlacklisted(_to) {
         _mint(_to, _amount);
     }
@@ -126,8 +127,13 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         address _to,
         uint256 _value
     ) internal override(ERC20Upgradeable, ERC20PausableUpgradeable) whenNotPaused {
-        uint256 burnAmount = (_value * s_burnRate) / 1e16;
-        uint256 fee = (_value * s_txFeeRate) / 1e16;
+        if (_from == address(0)) {
+            // Minting case, do not apply burn and fee
+            ERC20Upgradeable._update(_from, _to, _value);
+            return;
+        }
+        uint256 burnAmount = (_value * s_burnRate) / 1e18;
+        uint256 fee = (_value * s_txFeeRate) / 1e18;
 
         uint256 amountToSend = _value - fee - burnAmount;
 

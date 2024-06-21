@@ -2,12 +2,14 @@ require('dotenv').config();
 const { task } = require('hardhat/config');
 require('@nomicfoundation/hardhat-toolbox');
 require('hardhat-contract-sizer');
+require("hardhat-tracer");
 
 const fs = require('fs-extra');
 const chains = require('./chains.json');
 const { getWallet } = require('./utils');
 const Deployer = require('./artifacts/contracts/Deployer.sol/Deployer.json');
 const Proxy = require('@openzeppelin/contracts/build/contracts/TransparentUpgradeableProxy.json');
+const ProxyAdmin = require('@openzeppelin/contracts/build/contracts/ProxyAdmin.json');
 const AccessControl = require('./artifacts/contracts/AccessControl.sol/AccessControl.json');
 const Factory = require('./artifacts/contracts/TokenFactory.sol/TokenFactory.json');
 const { create3DeployContract } = require('@axelar-network/axelar-gmp-sdk-solidity/scripts/create3Deployer');
@@ -25,22 +27,25 @@ task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) 
 task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').setAction(async (taskArgs, hre) => {
     const wallet = getWallet(chains[1].rpc, hre);
 
-    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1076, []);
-    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1077, []);
+    const proxyAdmin = await create3DeployContract(create3DeployerAddress, wallet, ProxyAdmin, 1181, [wallet.address]);
+
+    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1182, []);
+    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1183, []);
 
     // const initData = ethers.utils.defaultAbiCoder.encode(
     //     ['address', 'address', 'address'],
     //     [chains[1].its, '0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE', chains[1].gateway],
     // );
 
-    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1078, [
+
+    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1184, [
         implAccessControl.address,
-        wallet.address,
+        proxyAdmin.address,
         '0x',
     ]);
-    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1079, [
+    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1185, [
         implDeployer.address,
-        wallet.address,
+        proxyAdmin.address,
         '0x',
     ]);
 
@@ -61,19 +66,21 @@ task('deployHomeCelo', 'deploy factory on home chain, (celo for testing)')
     .addParam('deployer', 'Deployer on dest chain')
     .setAction(async (taskArgs, hre) => {
         const wallet = getWallet(chains[0].rpc, hre);
+        const proxyAdmin = await create3DeployContract(create3DeployerAddress, wallet, ProxyAdmin, 1181, [wallet.address]);
 
-        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1076, []);
-        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1077, []);
 
-        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1078, [
+        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1182, []);
+        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1183, []);
+
+        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1184, [
             implAccessControl.address,
-            wallet.address,
+            proxyAdmin.address, 
             '0x',
         ]);
 
-        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1079, [
+        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1185, [
             implFactory.address,
-            wallet.address,
+            proxyAdmin.address,
             '0x',
         ]);
 

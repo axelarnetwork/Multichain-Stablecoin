@@ -138,7 +138,7 @@ contract TokenFactory is Create3, Initializable {
             S_SALT_ITS_TOKEN,
             '',
             ITokenManagerType.TokenManagerType.LOCK_UNLOCK,
-            abi.encode(msg.sender.toBytes(), newTokenProxy),
+            abi.encode(msg.sender.toBytes(), newTokenProxy), //sets operator
             msg.value
         );
         emit NativeTokenDeployed(newTokenProxy, tokenId);
