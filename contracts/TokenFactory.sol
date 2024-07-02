@@ -9,7 +9,6 @@ import '@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IAxelarGate
 import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchainTokenService.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
-import '@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
 import './NativeTokenV1.sol';
@@ -42,13 +41,21 @@ contract TokenFactory is Create3, Initializable {
     Deployer public s_deployer;
     bytes32 public S_SALT_ITS_TOKEN; //12345
 
-    mapping(uint256 => address) public s_nativeTokens;
+    address public s_nativeToken;
     mapping(string => address) public s_semiNativeTokens;
 
     /*************\
         EVENTS
     /*************/
     event NativeTokenDeployed(address token, bytes32 interchainTokenId);
+
+    /*************\
+        MODIFIERS
+    /*************/
+    modifier onlyAdmin() {
+        if (!s_accessControl.isAdmin(msg.sender)) revert OnlyAdmin();
+        _;
+    }
 
     /*************\
      INITIALIZATION
@@ -80,7 +87,7 @@ contract TokenFactory is Create3, Initializable {
 
     //crosschain semi native deployment (does not wire up to its)
     function deployRemoteSemiNativeToken(string calldata _destChain) external payable {
-        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeTokens[block.chainid] != address(0)) revert TokenAlreadyDeployed();
+        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeToken != address(0)) revert TokenAlreadyDeployed();
 
         bytes32 computedTokenId = keccak256(
             abi.encode(
@@ -93,7 +100,7 @@ contract TokenFactory is Create3, Initializable {
         // Set Payload To Deploy Crosschain Token with Init Args
         bytes memory gmpPayload = abi.encode(
             computedTokenId,
-            address(this),
+            msg.sender,
             type(SemiNativeToken).creationCode,
             SemiNativeToken.initialize.selector
         );
@@ -111,10 +118,8 @@ contract TokenFactory is Create3, Initializable {
     }
 
     // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
-    function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable returns (address newTokenProxy) {
-        // if (s_accessControl.isAdmin(msg.sender)) revert OnlyAdmin();
-
-        if (s_nativeTokens[block.chainid] != address(0)) revert TokenAlreadyDeployed();
+    function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable onlyAdmin returns (address newTokenProxy) {
+        if (s_nativeToken != address(0)) revert TokenAlreadyDeployed();
 
         bytes32 SALT_PROXY = 0x000000000000000000000000000000000000000000000000000000000000007B; //123
         bytes32 SALT_IMPL = 0x00000000000000000000000000000000000000000000000000000000000004D2; //1234
@@ -123,15 +128,12 @@ contract TokenFactory is Create3, Initializable {
         address newTokenImpl = _create3(type(NativeTokenV1).creationCode, SALT_IMPL);
         if (newTokenImpl == address(0)) revert DeploymentFailed();
 
-        // Deploy ProxyAdmin
-        ProxyAdmin proxyAdmin = new ProxyAdmin(address(this));
-
         // Generate Proxy Creation Code (Bytecode + Constructor)
-        bytes memory proxyCreationCode = _getEncodedCreationCodeNative(address(proxyAdmin), newTokenImpl, _burnRate, _txFeeRate);
+        bytes memory proxyCreationCode = _getEncodedCreationCodeNative(msg.sender, newTokenImpl, _burnRate, _txFeeRate);
         // Deploy proxy
         newTokenProxy = _create3(proxyCreationCode, SALT_PROXY);
         if (newTokenProxy == address(0)) revert DeploymentFailed();
-        s_nativeTokens[block.chainid] = newTokenProxy;
+        s_nativeToken = newTokenProxy;
 
         // Deploy ITS
         bytes32 tokenId = s_its.deployTokenManager(

@@ -102,7 +102,7 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         _mint(_to, _amount);
     }
 
-    function burn(address _from, uint256 _amount) public {
+    function burn(address _from, uint256 _amount) public whenNotPaused {
         _burn(_from, _amount);
     }
 
@@ -140,8 +140,8 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         if (burnAmount > 0) _burn(_from, burnAmount);
 
         if (amountToSend + burnAmount + fee != _value) revert InvalidSendAmount();
-        ERC20Upgradeable._update(_from, _to, _value);
         s_rewardPool += fee;
+        ERC20Upgradeable._update(_from, _to, _value);
         emit RewardAdded(fee);
     }
 }

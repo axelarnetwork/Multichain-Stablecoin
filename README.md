@@ -11,4 +11,4 @@ Deployer deploys semi native factory deploys native
 
 interchainTransfer()
 1. APPROVE SRC ITS  await contract.approve("0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C", 10000000) 
-2.  APPROVE DEST MANAGER await contract.approve("0x28776A696E5b71062FE9169CB0975277b8e6f75D", 100000000)
+2. APPROVE DEST MANAGER await contract.approve("0x28776A696E5b71062FE9169CB0975277b8e6f75D", 100000000)
