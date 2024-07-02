@@ -47,36 +47,7 @@ contract Deployer is Initializable, Create3 {
 
     //on dest chain deploy token manager for new ITS token
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
-        (bytes32 computedTokenId, address owner, bytes memory semiNativeTokenBytecode, bytes4 semiNativeSelector) = abi.decode(
-            _payload,
-            (bytes32, address, bytes, bytes4)
-        );
-
-        // Deploy implementation
-        address newTokenImpl = _create3(semiNativeTokenBytecode, 0x00000000000000000000000000000000000000000000000000000000000004D2); //1234
-        if (newTokenImpl == address(0)) revert DeploymentFailed();
-
-        bytes memory creationCodeProxy = _getEncodedCreationCodeSemiNative(
-            address(this), //proxyAdmin
-            newTokenImpl,
-            computedTokenId,
-            semiNativeSelector
-        );
-
-        address newTokenProxy = _create3(creationCodeProxy, 0x000000000000000000000000000000000000000000000000000000000000007B); //123
-        if (newTokenProxy == address(0)) revert DeploymentFailed();
-        s_tokenProxy = ITransparentUpgradeableProxy(newTokenProxy);
-
-        s_its.deployTokenManager(
-            0x0000000000000000000000000000000000000000000000000000000000003039, //12345
-            '',
-            ITokenManagerType.TokenManagerType.MINT_BURN,
-            abi.encode(address(this).toBytes(), newTokenProxy),
-            0
-        );
-
-        s_gateway.callContract(_sourceChain, _sourceAddress, abi.encode(newTokenProxy));
+       // TODO!
     }
 
     ProxyAdmin public testMe;

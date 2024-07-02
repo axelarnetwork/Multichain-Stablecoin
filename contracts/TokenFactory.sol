@@ -87,34 +87,7 @@ contract TokenFactory is Create3, Initializable {
 
     //crosschain semi native deployment (does not wire up to its)
     function deployRemoteSemiNativeToken(string calldata _destChain) external payable {
-        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeToken != address(0)) revert TokenAlreadyDeployed();
-
-        bytes32 computedTokenId = keccak256(
-            abi.encode(
-                keccak256('its-interchain-token-id'),
-                address(this), //sender
-                S_SALT_ITS_TOKEN
-            )
-        );
-
-        // Set Payload To Deploy Crosschain Token with Init Args
-        bytes memory gmpPayload = abi.encode(
-            computedTokenId,
-            msg.sender,
-            type(SemiNativeToken).creationCode,
-            SemiNativeToken.initialize.selector
-        );
-
-        s_gasService.payNativeGasForContractCall{ value: msg.value }(
-            address(this),
-            _destChain,
-            address(s_deployer).toString(),
-            gmpPayload,
-            msg.sender
-        );
-
-        // send gmp tx to deploy new token (manager waiting on dest chain already)
-        s_gateway.callContract(_destChain, address(s_deployer).toString(), gmpPayload);
+        //TODO!!
     }
 
     // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
@@ -147,10 +120,7 @@ contract TokenFactory is Create3, Initializable {
     }
 
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        bytes32 payloadHash = keccak256(_payload);
-        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, payloadHash)) revert NotApprovedByGateway();
-        address liveTokenAddress = abi.decode(_payload, (address));
-        s_semiNativeTokens[_sourceChain] = liveTokenAddress;
+        // TODO!
     }
 
     function getExpectedAddress(bytes32 _salt) public view returns (address) {
