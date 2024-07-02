@@ -87,7 +87,21 @@ contract TokenFactory is Create3, Initializable {
 
     //crosschain semi native deployment (does not wire up to its)
     function deployRemoteSemiNativeToken(string calldata _destChain) external payable {
-        //TODO!!
+        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeToken != address(0)) revert TokenAlreadyDeployed();
+
+        bytes32 computedTokenId = keccak256(abi.encode(keccak256('its-interchain-token-id'), address(this), S_SALT_ITS_TOKEN));
+
+        bytes memory gmpPayload = abi.encode(computedTokenId, type(SemiNativeToken).creationCode, SemiNativeToken.initialize.selector);
+
+        s_gasService.payNativeGasForContractCall{ value: msg.value }(
+            address(this),
+            _destChain,
+            address(s_deployer).toString(),
+            gmpPayload,
+            msg.sender
+        );
+
+        s_gateway.callContract(_destChain, address(s_deployer).toString(), gmpPayload);
     }
 
     // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
@@ -103,6 +117,7 @@ contract TokenFactory is Create3, Initializable {
 
         // Generate Proxy Creation Code (Bytecode + Constructor)
         bytes memory proxyCreationCode = _getEncodedCreationCodeNative(msg.sender, newTokenImpl, _burnRate, _txFeeRate);
+
         // Deploy proxy
         newTokenProxy = _create3(proxyCreationCode, SALT_PROXY);
         if (newTokenProxy == address(0)) revert DeploymentFailed();
@@ -113,14 +128,17 @@ contract TokenFactory is Create3, Initializable {
             S_SALT_ITS_TOKEN,
             '',
             ITokenManagerType.TokenManagerType.LOCK_UNLOCK,
-            abi.encode(msg.sender.toBytes(), newTokenProxy), //sets operator
+            abi.encode(msg.sender.toBytes(), newTokenProxy),
             msg.value
         );
+
         emit NativeTokenDeployed(newTokenProxy, tokenId);
     }
 
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
         // TODO!
+        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
+        s_semiNativeTokens[_sourceChain] = abi.decode(_payload, (address));
     }
 
     function getExpectedAddress(bytes32 _salt) public view returns (address) {

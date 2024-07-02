@@ -31,6 +31,8 @@ contract Deployer is Initializable, Create3 {
     IAxelarGateway public s_gateway;
     ITransparentUpgradeableProxy public s_tokenProxy;
 
+    bytes32 public S_SALT_ITS_TOKEN; //12345
+
     /*****************\
      INITIALIZATION
   /*****************/
@@ -39,6 +41,8 @@ contract Deployer is Initializable, Create3 {
         s_its = _its;
         s_accessControl = _accessControl;
         s_gateway = _gateway;
+
+        S_SALT_ITS_TOKEN = 0x0000000000000000000000000000000000000000000000000000000000003039; //12345
     }
 
     /***************************\
@@ -47,27 +51,49 @@ contract Deployer is Initializable, Create3 {
 
     //on dest chain deploy token manager for new ITS token
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-       // TODO!
+        // TODO!
+        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
+
+        (bytes32 computedTokenId, bytes memory semiNativeTokenBytecode, bytes4 semiNativeSelector) = abi.decode(
+            _payload,
+            (bytes32, bytes, bytes4)
+        );
+
+        address newTokenImpl = _create3(semiNativeTokenBytecode, 0x00000000000000000000000000000000000000000000000000000000000004D2);
+        if (newTokenImpl == address(0)) revert DeploymentFailed();
+
+        bytes memory creationCodeProxy = _getEncodedCreationCodeSemiNative(
+            address(this),
+            newTokenImpl,
+            computedTokenId,
+            semiNativeSelector
+        );
+
+        address newTokenProxy = _create3(creationCodeProxy, 0x000000000000000000000000000000000000000000000000000000000000007B);
+        if (newTokenProxy == address(0)) revert DeploymentFailed();
+
+        s_tokenProxy = ITransparentUpgradeableProxy(newTokenProxy);
+
+        // Deploy ITS
+        s_its.deployTokenManager(
+            S_SALT_ITS_TOKEN,
+            '',
+            ITokenManagerType.TokenManagerType.MINT_BURN,
+            abi.encode(msg.sender.toBytes(), newTokenProxy),
+            0
+        );
+
+        s_gateway.callContract(_sourceChain, _sourceAddress, abi.encode(newTokenProxy));
     }
-
-    ProxyAdmin public testMe;
-    address public testMeImpl;
-
-    bytes public testMeData;
 
     function upgradeSemiNativeToken(address _proxyAdmin) external {
         address newTokenImpl = _create3(
             type(SemiNativeTokenV2).creationCode,
-            0x0000000000000000000000000000000000000000000000000000000000003039
-        ); //12345
-
+            0x0000000000000000000000000000000000000000000000000000000000003439
+        );
         if (newTokenImpl == address(0)) revert DeploymentFailed();
-        testMeImpl = newTokenImpl;
 
-        // Read the storage slot of proxy admin
-        // bytes32 slot = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
-
-        ProxyAdmin(_proxyAdmin).upgradeAndCall(s_tokenProxy, testMeImpl, '');
+        ProxyAdmin(_proxyAdmin).upgradeAndCall(s_tokenProxy, newTokenImpl, '');
     }
 
     function _getEncodedCreationCodeSemiNative(
