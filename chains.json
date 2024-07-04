@@ -6,6 +6,7 @@
       "gateway": "0xe432150cce91c13a887f7D836923d5597adD8E31",
       "gasService": "0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6",
       "its": "0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C",
+      "itsFactory": "0x83a93500d23Fbc3e82B410aD07A6a9F7A0670D66",
       "wmatic": "0x21ba4f6aEdA155DD77Cc33Fb93646910543F0380",
       "aUSDC": "0x254d06f33bDc5b8ee05b2ea472107E300226659A",
       "tokenName": "Celo",

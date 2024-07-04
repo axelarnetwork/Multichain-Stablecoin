@@ -11,6 +11,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
+import '@axelar-network/interchain-token-service/contracts/InterchainTokenFactory.sol';
 import './NativeTokenV1.sol';
 import './SemiNativeToken.sol';
 import './AccessControl.sol';
@@ -38,6 +39,7 @@ contract TokenFactory is Create3, Initializable {
     AccessControl public s_accessControl;
     IAxelarGasService public s_gasService;
     IAxelarGateway public s_gateway;
+    IInterchainTokenFactory s_itsFactory;
     Deployer public s_deployer;
     bytes32 public S_SALT_ITS_TOKEN; //12345
 
@@ -70,14 +72,15 @@ contract TokenFactory is Create3, Initializable {
         IAxelarGasService _gasService,
         IAxelarGateway _gateway,
         AccessControl _accessControl,
-        Deployer _deployer
+        Deployer _deployer,
+        IInterchainTokenFactory _itsFactory
     ) external initializer {
         s_its = _its;
         s_gasService = _gasService;
         s_gateway = _gateway;
         s_accessControl = _accessControl;
         s_deployer = _deployer;
-
+        s_itsFactory = _itsFactory;
         S_SALT_ITS_TOKEN = 0x0000000000000000000000000000000000000000000000000000000000003039; //12345
     }
 
@@ -87,7 +90,21 @@ contract TokenFactory is Create3, Initializable {
 
     //crosschain semi native deployment (does not wire up to its)
     function deployRemoteSemiNativeToken(string calldata _destChain) external payable {
-        // TODO
+        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeToken != address(0)) revert TokenAlreadyDeployed();
+
+        bytes32 computedTokenId = keccak256(abi.encode(keccak256('its-interchain-token-id'), address(this), S_SALT_ITS_TOKEN));
+
+        bytes memory gmpPayload = abi.encode(computedTokenId, type(SemiNativeToken).creationCode, SemiNativeToken.initialize.selector);
+
+        s_gasService.payNativeGasForContractCall{ value: msg.value }(
+            address(this),
+            _destChain,
+            address(s_deployer).toString(),
+            gmpPayload,
+            msg.sender
+        );
+
+        s_gateway.callContract(_destChain, address(s_deployer).toString(), gmpPayload);
     }
 
     // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
@@ -109,7 +126,7 @@ contract TokenFactory is Create3, Initializable {
         if (newTokenProxy == address(0)) revert DeploymentFailed();
         s_nativeToken = newTokenProxy;
 
-        // Deploy ITS
+        // // Deploy ITS
         bytes32 tokenId = s_its.deployTokenManager(
             S_SALT_ITS_TOKEN,
             '',
@@ -122,7 +139,8 @@ contract TokenFactory is Create3, Initializable {
     }
 
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        // TODO!
+        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
+        s_semiNativeTokens[_sourceChain] = abi.decode(_payload, (address));
     }
 
     function getExpectedAddress(bytes32 _salt) public view returns (address) {
