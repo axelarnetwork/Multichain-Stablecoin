@@ -63,10 +63,10 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         uint256 _burnRate,
         uint256 _txFeeRate
     ) public initializer {
-        __ERC20_init('Interchain Token', 'ITS');
+        __ERC20_init('USD Token', 'USD');
         __ERC20Burnable_init();
         __ERC20Pausable_init();
-        __ERC20Permit_init('Interchain Token');
+        __ERC20Permit_init('USD Token');
 
         s_accessControl = _accessControl;
         s_its = _its;

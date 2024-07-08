@@ -49,7 +49,7 @@ contract SemiNativeTokenV2 is Initializable, ERC20Upgradeable, ERC20BurnableUpgr
     }
 
     function initialize(IInterchainTokenService _its, bytes32 _itsTokenId) public initializer {
-        __ERC20_init('Semi Native Interchain Token', 'SITS');
+        __ERC20_init('Semi Native USD Token2', 'SUSD2');
         __ERC20Burnable_init();
         s_its = _its;
         s_tokenId = _itsTokenId;
