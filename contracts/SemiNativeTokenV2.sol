@@ -11,7 +11,7 @@ import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchai
 
 import './NativeToken.sol';
 
-contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable {
+contract SemiNativeTokenV2 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable {
     using AddressBytes for bytes;
 
     /*************\
@@ -48,11 +48,12 @@ contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgrad
         _disableInitializers();
     }
 
-    function initialize(IInterchainTokenService _its, bytes32 _itsTokenId) public initializer {
-        __ERC20_init('Semi Native USD Token', 'SUSD');
+    //TODO fix init
+    function initialize() public /*initializer*/ {
+        __ERC20_init('Semi Native Interchain Token', 'SITS');
         __ERC20Burnable_init();
-        s_its = _its;
-        s_tokenId = _itsTokenId;
+        s_its = IInterchainTokenService(address(0)); //_its;
+        s_tokenId = 'BEN'; //_itsTokenId;
     }
 
     /***************************\
@@ -67,6 +68,19 @@ contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgrad
     function burn(address _from, uint256 _amount) public {
         _burn(_from, _amount);
     }
+
+    function interchainTransfer(
+        string calldata _destChain,
+        bytes calldata _receiver,
+        uint256 _amount
+    ) external payable isBlacklisted(_receiver.toAddress()) {
+        s_its.interchainTransfer(s_tokenId, _destChain, _receiver, _amount, '', msg.value);
+    }
+
+    function isV2() public pure returns (bool) {
+        return true;
+    }
+
     /***************************\
        INTERNAL FUNCTIONALITY
     \***************************/

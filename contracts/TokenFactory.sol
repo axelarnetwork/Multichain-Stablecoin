@@ -11,7 +11,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
-import './NativeTokenV1.sol';
+import './NativeToken.sol';
 import './SemiNativeToken.sol';
 import './AccessControl.sol';
 import './Deployer.sol';
