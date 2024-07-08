@@ -9,7 +9,6 @@ import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchai
 import { AddressBytes } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/libs/AddressBytes.sol';
 
 import './AccessControl.sol';
-//TODO import semiNativeV2
 
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
 
@@ -65,10 +64,6 @@ contract Deployer is Initializable, Create3 {
         bytes32 _itsTokenId,
         bytes4 semiNativeSelector
     ) internal view returns (bytes memory proxyCreationCode) {
-        //init func args
-        bytes memory initData = abi.encodeWithSelector(semiNativeSelector, s_its, _itsTokenId);
-
-        //concat bytecode + init func args
-        proxyCreationCode = abi.encodePacked(type(TransparentUpgradeableProxy).creationCode, abi.encode(_implAddr, _proxyAdmin, initData));
+        // TODO
     }
 }

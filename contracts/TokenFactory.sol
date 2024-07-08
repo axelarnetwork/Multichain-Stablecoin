@@ -90,35 +90,8 @@ contract TokenFactory is Create3, Initializable {
         // TODO
     }
 
-    // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
     function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable onlyAdmin returns (address newTokenProxy) {
-        if (s_nativeToken != address(0)) revert TokenAlreadyDeployed();
-
-        bytes32 SALT_PROXY = 0x000000000000000000000000000000000000000000000000000000000000007B; //123
-        bytes32 SALT_IMPL = 0x00000000000000000000000000000000000000000000000000000000000004D2; //1234
-
-        // Deploy implementation
-        address newTokenImpl = _create3(type(NativeTokenV1).creationCode, SALT_IMPL);
-        if (newTokenImpl == address(0)) revert DeploymentFailed();
-
-        // Generate Proxy Creation Code (Bytecode + Constructor)
-        bytes memory proxyCreationCode = _getEncodedCreationCodeNative(msg.sender, newTokenImpl, _burnRate, _txFeeRate);
-
-        // Deploy proxy
-        newTokenProxy = _create3(proxyCreationCode, SALT_PROXY);
-        if (newTokenProxy == address(0)) revert DeploymentFailed();
-        s_nativeToken = newTokenProxy;
-
-        // Deploy ITS
-        bytes32 tokenId = s_its.deployTokenManager(
-            S_SALT_ITS_TOKEN,
-            '',
-            ITokenManagerType.TokenManagerType.LOCK_UNLOCK,
-            abi.encode(msg.sender.toBytes(), newTokenProxy),
-            msg.value
-        );
-
-        emit NativeTokenDeployed(newTokenProxy, tokenId);
+        // TODO
     }
 
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
@@ -139,8 +112,6 @@ contract TokenFactory is Create3, Initializable {
         uint256 _burnRate,
         uint256 _txFeeRate
     ) internal view returns (bytes memory proxyCreationCode) {
-        bytes memory initData = abi.encodeWithSelector(NativeTokenV1.initialize.selector, s_accessControl, s_its, _burnRate, _txFeeRate);
-
-        proxyCreationCode = abi.encodePacked(type(TransparentUpgradeableProxy).creationCode, abi.encode(_implAddr, _proxyAdmin, initData));
+        // TODO
     }
 }

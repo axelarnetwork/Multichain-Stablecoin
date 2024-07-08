@@ -44,10 +44,10 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
     }
 
     function initialize() public initializer {
-        __ERC20_init('Interchain Token', 'ITS');
+        __ERC20_init('USD Token', 'USD');
         __ERC20Burnable_init();
         __ERC20Pausable_init();
-        __ERC20Permit_init('Interchain Token');
+        __ERC20Permit_init('USD Token');
     }
 
     /***************************\
@@ -62,7 +62,6 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
         _unpause();
     }
 
-    // > await contract.mint("0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE", "7000000000000000000", {gasLimit: "10000000"})
     function mint(address _to, uint256 _amount) public whenNotPaused {
         _mint(_to, _amount);
     }

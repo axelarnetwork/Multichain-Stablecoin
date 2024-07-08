@@ -49,7 +49,7 @@ contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgrad
     }
 
     function initialize(IInterchainTokenService _its, bytes32 _itsTokenId) public initializer {
-        __ERC20_init('Semi Native Interchain Token', 'SITS');
+        __ERC20_init('Semi Native USD Token', 'SUSD');
         __ERC20Burnable_init();
         s_its = _its;
         s_tokenId = _itsTokenId;
@@ -67,15 +67,6 @@ contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgrad
     function burn(address _from, uint256 _amount) public {
         _burn(_from, _amount);
     }
-
-    function interchainTransfer(
-        string calldata _destChain,
-        bytes calldata _receiver,
-        uint256 _amount
-    ) external payable isBlacklisted(_receiver.toAddress()) {
-        s_its.interchainTransfer(s_tokenId, _destChain, _receiver, _amount, '', msg.value);
-    }
-
     /***************************\
        INTERNAL FUNCTIONALITY
     \***************************/
