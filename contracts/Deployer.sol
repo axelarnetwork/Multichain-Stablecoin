@@ -22,6 +22,7 @@ contract Deployer is Initializable, Create3 {
 
     error DeploymentFailed();
     error NotApprovedByGateway();
+    error InvalidCaller();
 
     /*************\
       STORAGE
@@ -33,9 +34,21 @@ contract Deployer is Initializable, Create3 {
 
     bytes32 public S_SALT_ITS_TOKEN; //12345
 
+    /**************\
+       MODIFIER
+    /**************/
+    modifier onlyAdmin() {
+        if (!s_accessControl.isAdmin(msg.sender)) revert InvalidCaller();
+        _;
+    }
+
     /*****************\
      INITIALIZATION
   /*****************/
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(IInterchainTokenService _its, AccessControl _accessControl, IAxelarGateway _gateway) external initializer {
         s_its = _its;
@@ -86,7 +99,7 @@ contract Deployer is Initializable, Create3 {
         s_gateway.callContract(_sourceChain, _sourceAddress, abi.encode(newTokenProxy));
     }
 
-    function upgradeSemiNativeToken(address _proxyAdmin) external {
+    function upgradeSemiNativeToken(address _proxyAdmin) external onlyAdmin {
         address newTokenImpl = _create3(
             type(SemiNativeTokenV2).creationCode,
             0x0000000000000000000000000000000000000000000000000000000000003439

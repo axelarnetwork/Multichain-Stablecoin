@@ -16,34 +16,27 @@ const { create3DeployContract } = require('@axelar-network/axelar-gmp-sdk-solidi
 
 const create3DeployerAddress = '0x6513Aedb4D1593BA12e50644401D976aebDc90d8';
 // Task to clean up the .openzeppelin directory
-task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) => {
-    const directory = './.openzeppelin';
-    if (fs.existsSync(directory)) {
-        await fs.remove(directory);
-        console.log('.openzeppelin directory removed successfully.');
-    }
-});
+// task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) => {
+//     const directory = './.openzeppelin';
+//     if (fs.existsSync(directory)) {
+//         await fs.remove(directory);
+//         console.log('.openzeppelin directory removed successfully.');
+//     }
+// });
 
 task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').setAction(async (taskArgs, hre) => {
     const wallet = getWallet(chains[1].rpc, hre);
 
-    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1624, []);
-    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1625, []);
+    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1720, []);
+    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1721, []);
 
-    // const initData = ethers.utils.defaultAbiCoder.encode(
-    //     ['address', 'address', 'address'],
-    //     [chains[1].its, '0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE', chains[1].gateway],
-    // );
-
-    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1626, [
+    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1722, [
         implAccessControl.address,
-        // proxyAdmin.address,
         wallet.address,
         '0x',
     ]);
-    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1627, [
+    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1723, [
         implDeployer.address,
-        // proxyAdmin.address,
         wallet.address,
         '0x',
     ]);
@@ -66,16 +59,16 @@ task('deployHomeCelo', 'deploy factory on home chain, (celo for testing)')
     .setAction(async (taskArgs, hre) => {
         const wallet = getWallet(chains[0].rpc, hre);
 
-        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1624, []);
-        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1625, []);
+        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1720, []);
+        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1721, []);
 
-        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1626, [
+        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1722, [
             implAccessControl.address,
             wallet.address,
             '0x',
         ]);
 
-        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1627, [
+        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1723, [
             implFactory.address,
             wallet.address,
             '0x',

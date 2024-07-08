@@ -21,8 +21,8 @@ contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradea
     /*************\
         STORAGE
     /*************/
-    AccessControl public s_accessControl;
     IInterchainTokenService public s_its;
+    AccessControl public s_accessControl;
 
     uint256 public s_burnRate;
     uint256 public s_txFeeRate;

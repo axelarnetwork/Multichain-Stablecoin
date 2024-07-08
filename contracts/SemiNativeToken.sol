@@ -60,7 +60,7 @@ contract SemiNativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgrad
     \***************************/
 
     function mint(address _to, uint256 _amount) public isBlacklisted(_to) {
-        if (s_its.validTokenManagerAddress(s_tokenId) == address(0)) revert OnlyTokenManager();
+        if (s_its.validTokenManagerAddress(s_tokenId) != msg.sender) revert OnlyTokenManager();
         _mint(_to, _amount);
     }
 
