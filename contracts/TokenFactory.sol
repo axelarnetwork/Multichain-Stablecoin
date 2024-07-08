@@ -104,8 +104,7 @@ contract TokenFactory is Create3, Initializable {
         s_gateway.callContract(_destChain, address(s_deployer).toString(), gmpPayload);
     }
 
-    // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
-    function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable onlyAdmin returns (address newTokenProxy) {
+    function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external onlyAdmin returns (address newTokenProxy) {
         if (s_nativeToken != address(0)) revert TokenAlreadyDeployed();
 
         bytes32 SALT_PROXY = 0x000000000000000000000000000000000000000000000000000000000000007B; //123
@@ -129,14 +128,13 @@ contract TokenFactory is Create3, Initializable {
             '',
             ITokenManagerType.TokenManagerType.LOCK_UNLOCK,
             abi.encode(msg.sender.toBytes(), newTokenProxy),
-            msg.value
+            0
         );
 
         emit NativeTokenDeployed(newTokenProxy, tokenId);
     }
 
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        // TODO!
         if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
         s_semiNativeTokens[_sourceChain] = abi.decode(_payload, (address));
     }

@@ -64,7 +64,6 @@ contract Deployer is Initializable, Create3 {
 
     //on dest chain deploy token manager for new ITS token
     function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        // TODO!
         if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
 
         (bytes32 computedTokenId, bytes memory semiNativeTokenBytecode, bytes4 semiNativeSelector) = abi.decode(
@@ -72,7 +71,10 @@ contract Deployer is Initializable, Create3 {
             (bytes32, bytes, bytes4)
         );
 
-        address newTokenImpl = _create3(semiNativeTokenBytecode, 0x00000000000000000000000000000000000000000000000000000000000004D2);
+        bytes32 SALT_PROXY = 0x000000000000000000000000000000000000000000000000000000000000007B; //123
+        bytes32 SALT_IMPL = 0x00000000000000000000000000000000000000000000000000000000000004D2; //1234
+
+        address newTokenImpl = _create3(semiNativeTokenBytecode, SALT_IMPL);
         if (newTokenImpl == address(0)) revert DeploymentFailed();
 
         bytes memory creationCodeProxy = _getEncodedCreationCodeSemiNative(
@@ -82,7 +84,7 @@ contract Deployer is Initializable, Create3 {
             semiNativeSelector
         );
 
-        address newTokenProxy = _create3(creationCodeProxy, 0x000000000000000000000000000000000000000000000000000000000000007B);
+        address newTokenProxy = _create3(creationCodeProxy, SALT_PROXY);
         if (newTokenProxy == address(0)) revert DeploymentFailed();
 
         s_tokenProxy = ITransparentUpgradeableProxy(newTokenProxy);
