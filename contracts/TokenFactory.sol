@@ -14,7 +14,6 @@ import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
 import './NativeToken.sol';
 import './SemiNativeToken.sol';
 import './AccessControl.sol';
-import './Deployer.sol';
 
 contract TokenFactory is Create3, Initializable {
     using AddressToString for address;
@@ -38,7 +37,6 @@ contract TokenFactory is Create3, Initializable {
     AccessControl public s_accessControl;
     IAxelarGasService public s_gasService;
     IAxelarGateway public s_gateway;
-    Deployer public s_deployer;
     bytes32 public S_SALT_ITS_TOKEN; //12345
 
     address public s_nativeToken;
@@ -69,14 +67,12 @@ contract TokenFactory is Create3, Initializable {
         IInterchainTokenService _its,
         IAxelarGasService _gasService,
         IAxelarGateway _gateway,
-        AccessControl _accessControl,
-        Deployer _deployer
+        AccessControl _accessControl
     ) external initializer {
         s_its = _its;
         s_gasService = _gasService;
         s_gateway = _gateway;
         s_accessControl = _accessControl;
-        s_deployer = _deployer;
 
         S_SALT_ITS_TOKEN = 0x0000000000000000000000000000000000000000000000000000000000003039; //12345
     }
@@ -92,10 +88,6 @@ contract TokenFactory is Create3, Initializable {
 
     function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable onlyAdmin returns (address newTokenProxy) {
         // TODO
-    }
-
-    function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        // TODO!
     }
 
     function getExpectedAddress(bytes32 _salt) public view returns (address) {
