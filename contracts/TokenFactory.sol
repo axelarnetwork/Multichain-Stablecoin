@@ -12,10 +12,8 @@ import '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.so
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
 import '@axelar-network/interchain-token-service/contracts/InterchainTokenFactory.sol';
-import './NativeTokenV1.sol';
-import './SemiNativeToken.sol';
+import './NativeToken.sol';
 import './AccessControl.sol';
-import './Deployer.sol';
 
 contract TokenFactory is Create3, Initializable {
     using AddressToString for address;
@@ -40,11 +38,9 @@ contract TokenFactory is Create3, Initializable {
     IAxelarGasService public s_gasService;
     IAxelarGateway public s_gateway;
     IInterchainTokenFactory s_itsFactory;
-    Deployer public s_deployer;
     bytes32 public S_SALT_ITS_TOKEN; //12345
 
     address public s_nativeToken;
-    mapping(string => address) public s_semiNativeTokens;
 
     /*************\
         EVENTS
@@ -72,14 +68,12 @@ contract TokenFactory is Create3, Initializable {
         IAxelarGasService _gasService,
         IAxelarGateway _gateway,
         AccessControl _accessControl,
-        Deployer _deployer,
         IInterchainTokenFactory _itsFactory
     ) external initializer {
         s_its = _its;
         s_gasService = _gasService;
         s_gateway = _gateway;
         s_accessControl = _accessControl;
-        s_deployer = _deployer;
         s_itsFactory = _itsFactory;
         S_SALT_ITS_TOKEN = 0x0000000000000000000000000000000000000000000000000000000000003039; //12345
     }
@@ -87,25 +81,6 @@ contract TokenFactory is Create3, Initializable {
     /***************************\
        EXTERNAL FUNCTIONALITY
     \***************************/
-
-    //crosschain semi native deployment (does not wire up to its)
-    function deployRemoteSemiNativeToken(string calldata _destChain) external payable {
-        if (s_semiNativeTokens[_destChain] != address(0) && s_nativeToken != address(0)) revert TokenAlreadyDeployed();
-
-        bytes32 computedTokenId = keccak256(abi.encode(keccak256('its-interchain-token-id'), address(this), S_SALT_ITS_TOKEN));
-
-        bytes memory gmpPayload = abi.encode(computedTokenId, type(SemiNativeToken).creationCode, SemiNativeToken.initialize.selector);
-
-        s_gasService.payNativeGasForContractCall{ value: msg.value }(
-            address(this),
-            _destChain,
-            address(s_deployer).toString(),
-            gmpPayload,
-            msg.sender
-        );
-
-        s_gateway.callContract(_destChain, address(s_deployer).toString(), gmpPayload);
-    }
 
     // await contract.deployHomeNative(10000, 20000, {gasLimit: "10000000"})
     function deployHomeNative(uint256 _burnRate, uint256 _txFeeRate) external payable onlyAdmin returns (address newTokenProxy) {
@@ -115,7 +90,7 @@ contract TokenFactory is Create3, Initializable {
         bytes32 SALT_IMPL = 0x00000000000000000000000000000000000000000000000000000000000004D2; //1234
 
         // Deploy implementation
-        address newTokenImpl = _create3(type(NativeTokenV1).creationCode, SALT_IMPL);
+        address newTokenImpl = _create3(type(NativeToken).creationCode, SALT_IMPL);
         if (newTokenImpl == address(0)) revert DeploymentFailed();
 
         // Generate Proxy Creation Code (Bytecode + Constructor)
@@ -138,11 +113,6 @@ contract TokenFactory is Create3, Initializable {
         emit NativeTokenDeployed(newTokenProxy, tokenId);
     }
 
-    function execute(bytes32 _commandId, string calldata _sourceChain, string calldata _sourceAddress, bytes calldata _payload) external {
-        if (!s_gateway.validateContractCall(_commandId, _sourceChain, _sourceAddress, keccak256(_payload))) revert NotApprovedByGateway();
-        s_semiNativeTokens[_sourceChain] = abi.decode(_payload, (address));
-    }
-
     function getExpectedAddress(bytes32 _salt) public view returns (address) {
         return _create3Address(_salt);
     }
@@ -157,7 +127,7 @@ contract TokenFactory is Create3, Initializable {
         uint256 _burnRate,
         uint256 _txFeeRate
     ) internal view returns (bytes memory proxyCreationCode) {
-        bytes memory initData = abi.encodeWithSelector(NativeTokenV1.initialize.selector, s_accessControl, s_its, _burnRate, _txFeeRate);
+        bytes memory initData = abi.encodeWithSelector(NativeToken.initialize.selector, s_accessControl, s_its, _burnRate, _txFeeRate);
 
         proxyCreationCode = abi.encodePacked(type(TransparentUpgradeableProxy).creationCode, abi.encode(_implAddr, _proxyAdmin, initData));
     }

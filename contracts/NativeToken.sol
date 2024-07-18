@@ -10,7 +10,7 @@ import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchai
 import './AccessControl.sol';
 import './SemiNativeToken.sol';
 
-contract NativeTokenV1 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, ERC20PausableUpgradeable, ERC20PermitUpgradeable {
+contract NativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable, ERC20PausableUpgradeable, ERC20PermitUpgradeable {
     /*************\
         ERRORS
     /*************/
