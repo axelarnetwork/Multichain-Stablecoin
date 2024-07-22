@@ -1,14 +1,15 @@
-# Advanced ITS
+# Stablecoin Demo
 
-Deploy **Deployer** on all remote chains and deployer **Factory** on home chain.
+Corresponding code for Stablecoin Demo tutorial.
 
-Deployer deploys semi native factory deploys native
+To operate this repo
 
-1% = 10000000000000000
-3% = 30000000000000000
+1. Pass in `PRIVATE_KEY=""` in the `.env` file so that you can have a working wallet on testnet.
+2. Deploy the `Deployer` on your remote chain by runing `hh deployMoonbase --network moonbase`
+    - Currently the first task in `hardhat.config.js` will deploy this on Moonbase testnet.
+3. Deployer `TokenFactory` on your home chain
+    - Currently the second task in `hardhat.config.js` will deploy to Celo as your home chain.
+    - You can do this by running `hh deployHomeCelo --deployer "<YOUR_DEPLOYED_MOONBASE_DEPLOYER_ADDRESS>" --network celo`
+4. Interact with TokenFactory either on the block explorer or the Hardhat CLI to deploy a native token
 
 
-
-interchainTransfer()
-1. APPROVE SRC ITS  await contract.approve("0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C", 10000000) 
-2. APPROVE DEST MANAGER await contract.approve("0x28776A696E5b71062FE9169CB0975277b8e6f75D", 100000000)

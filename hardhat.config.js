@@ -27,23 +27,16 @@ task('cleanOpenZeppelin', 'Removes the .openzeppelin directory', async (_, hre) 
 task('deployMoonbase', 'deploy deployer on remote chain (Moonbase for testing').setAction(async (taskArgs, hre) => {
     const wallet = getWallet(chains[1].rpc, hre);
 
-    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1654, []);
-    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 1655, []);
+    const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1, []);
+    const implDeployer = await create3DeployContract(create3DeployerAddress, wallet, Deployer, 2, []);
 
-    // const initData = ethers.utils.defaultAbiCoder.encode(
-    //     ['address', 'address', 'address'],
-    //     [chains[1].its, '0xc5DcAC3e02f878FE995BF71b1Ef05153b71da8BE', chains[1].gateway],
-    // );
-
-    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1656, [
+    const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 3, [
         implAccessControl.address,
-        // proxyAdmin.address,
         wallet.address,
         '0x',
     ]);
-    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1657, [
+    const proxyDeployer = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 4, [
         implDeployer.address,
-        // proxyAdmin.address,
         wallet.address,
         '0x',
     ]);
@@ -66,16 +59,16 @@ task('deployHomeCelo', 'deploy factory on home chain, (celo for testing)')
     .setAction(async (taskArgs, hre) => {
         const wallet = getWallet(chains[0].rpc, hre);
 
-        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1654, []);
-        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 1655, []);
+        const implAccessControl = await create3DeployContract(create3DeployerAddress, wallet, AccessControl, 1, []);
+        const implFactory = await create3DeployContract(create3DeployerAddress, wallet, Factory, 2, []);
 
-        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1656, [
+        const proxyAccess = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 3, [
             implAccessControl.address,
             wallet.address,
             '0x',
         ]);
 
-        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 1657, [
+        const proxyFactory = await create3DeployContract(create3DeployerAddress, wallet, Proxy, 4, [
             implFactory.address,
             wallet.address,
             '0x',
