@@ -1,4 +1,4 @@
-# Stabelcoin Demo
+# Stablecoin Demo
 
 Corresponding code for Stablecoin Demo tutorial.
 
