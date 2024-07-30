@@ -131,7 +131,7 @@ contract NativeToken is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeabl
 
         s_rewardPool += fee;
 
-        ERC20Upgradeable._update(_from, _to, _value);
+        ERC20Upgradeable._update(_from, _to, amountToSend);
 
         emit RewardAdded(fee);
     }
