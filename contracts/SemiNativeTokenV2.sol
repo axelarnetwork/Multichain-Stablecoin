@@ -9,7 +9,7 @@ import { AddressBytes } from '@axelar-network/axelar-gmp-sdk-solidity/contracts/
 
 import '@axelar-network/interchain-token-service/contracts/interfaces/IInterchainTokenService.sol';
 
-import './NativeTokenV1.sol';
+import './NativeToken.sol';
 
 contract SemiNativeTokenV2 is Initializable, ERC20Upgradeable, ERC20BurnableUpgradeable {
     using AddressBytes for bytes;

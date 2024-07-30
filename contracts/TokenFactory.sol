@@ -11,7 +11,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol';
 import '@axelar-network/interchain-token-service/contracts/interfaces/ITokenManagerType.sol';
 import '@axelar-network/axelar-gmp-sdk-solidity/contracts/deploy/Create3.sol';
-import './NativeTokenV1.sol';
+import './NativeToken.sol';
 import './SemiNativeToken.sol';
 import './AccessControl.sol';
 import './Deployer.sol';
@@ -111,7 +111,7 @@ contract TokenFactory is Create3, Initializable {
         bytes32 SALT_IMPL = 0x00000000000000000000000000000000000000000000000000000000000004D2; //1234
 
         // Deploy implementation
-        address newTokenImpl = _create3(type(NativeTokenV1).creationCode, SALT_IMPL);
+        address newTokenImpl = _create3(type(NativeToken).creationCode, SALT_IMPL);
         if (newTokenImpl == address(0)) revert DeploymentFailed();
 
         // Generate Proxy Creation Code (Bytecode + Constructor)
@@ -153,7 +153,7 @@ contract TokenFactory is Create3, Initializable {
         uint256 _burnRate,
         uint256 _txFeeRate
     ) internal view returns (bytes memory proxyCreationCode) {
-        bytes memory initData = abi.encodeWithSelector(NativeTokenV1.initialize.selector, s_accessControl, s_its, _burnRate, _txFeeRate);
+        bytes memory initData = abi.encodeWithSelector(NativeToken.initialize.selector, s_accessControl, s_its, _burnRate, _txFeeRate);
 
         proxyCreationCode = abi.encodePacked(type(TransparentUpgradeableProxy).creationCode, abi.encode(_implAddr, _proxyAdmin, initData));
     }
